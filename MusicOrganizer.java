@@ -1,11 +1,13 @@
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.Collections;
 
 /**
  * A class to hold details of audio tracks.
  * Individual tracks may be played.
  * 
- * @author David J. Barnes and Michael Kölling
- * @version 2011.07.31
+ * Isaiah Wesley
+ * March 3, 2016
  */
 public class MusicOrganizer
 {
@@ -15,7 +17,8 @@ public class MusicOrganizer
     private MusicPlayer player;
     // A reader that can read music files and load them as tracks.
     private TrackReader reader;
-
+    // A generator that can play a random track. 
+    private Random generator;
     /**
      * Create a MusicOrganizer
      */
@@ -24,6 +27,7 @@ public class MusicOrganizer
         tracks = new ArrayList<Track>();
         player = new MusicPlayer();
         reader = new TrackReader();
+        generator = new Random();
         readLibrary("audio");
         System.out.println("Music library loaded. " + getNumberOfTracks() + " tracks.");
         System.out.println();
@@ -38,6 +42,21 @@ public class MusicOrganizer
         tracks.add(new Track(filename));
     }
     
+    /** 
+     * Manages shuffled tracks.
+     */
+    public void playShuffledTracks()
+    {
+    ArrayList<Track> newTracks = tracks;
+    Collections.shuffle(newTracks);
+    for(int i = 0; i <= newTracks.size() -1; i = i +1)
+    {
+        Track track = newTracks.get(i);
+        System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle());
+        player.playSample(track.getFilename());
+    }
+}
+
     /**
      * Add a track to the collection.
      * @param track The track to be added.
@@ -48,7 +67,7 @@ public class MusicOrganizer
     }
     
     /**
-     * Play a track in the collection.
+     * Plays a track in the collection.
      * @param index The index of the track to be played.
      */
     public void playTrack(int index)
@@ -126,6 +145,33 @@ public class MusicOrganizer
             player.startPlaying(tracks.get(0).getFilename());
         }
     }
+    /** 
+     * Sets up a random playlist. Ensures that no songs are repeated. 
+     */
+       public void playRandomPlaylist()
+    {
+        Random rand = new Random();
+        int trackNumber;
+        boolean playedTrack;
+        for(Track track : tracks) 
+        {
+            track.setPlayed(false);
+        }
+        for(int i = 0; i < tracks.size(); i++) 
+        {
+            playedTrack = false;
+            while(!playedTrack)
+            {
+                trackNumber = rand.nextInt(tracks.size());
+                if(!(tracks.get(trackNumber).getPlayed()))
+                {
+                    playTrack(trackNumber);
+                    tracks.get(trackNumber).setPlayed(true);
+                    playedTrack = true;
+                }
+            }
+        }
+    }
     
     /**
      * Stop the player.
@@ -161,6 +207,9 @@ public class MusicOrganizer
         return valid;
     }
     
+    /** Keeps track of the music libraries. 
+     * 
+     */
     private void readLibrary(String folderName)
     {
         ArrayList<Track> tempTracks = reader.readTracks(folderName, ".mp3");
